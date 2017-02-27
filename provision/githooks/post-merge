@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# remove timestamp file
+if [ -e wordpress/.timestamp ]; then
+    git rm --ignore-unmatch -q -rf wordpress/.timestamp;
+    rm -rf wordpress/.timestamp;
+    git commit --no-verify -m 'chore(git): remove timestamp file';
+fi

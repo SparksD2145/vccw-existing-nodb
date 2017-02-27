@@ -1,0 +1,38 @@
+# VCCW Specific
+.ansible
+.bundle
+.env
+.github/
+.travis.yml
+.vagrant
+npm-debug.log
+package.box
+playbook.retry
+vendor
+
+# VCCW Modified Specific
+/wordpress/.wp-changes
+/provision-post.sh
+
+# Misc Files
+*~
+.DS_Store
+.svn
+.cvs
+*.bak
+*.swp
+[Tt]humbs.db
+dwsync.xml
+*.log
+
+### WordPress ###
+/wordpress/wp-content/cache/
+/wordpress/wp-content/plugins/hello.php
+/wordpress/license.txt
+/wordpress/readme.html
+/wordpress/sitemap.xml
+/wordpress/sitemap.xml.gz
+
+# Plugin Specific
+**/gravity_forms/
+**/programmatic-forms/

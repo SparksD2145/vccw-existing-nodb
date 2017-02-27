@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+source "$(pwd)/.git/hooks/common.bash";
+
+# if [ $(isVagrantRunning) == 0]; then
+#     echo "Your vagrant host must be running!";
+#     exit 2;
+# fi
+
+if [ $(isBranchProtected) == false ] && [ ! -e $WP_DIR/$TIMESTAMP_FILE ]; then
+    create_timestamp_file;
+    git add $WP_DIR/$TIMESTAMP_FILE;
+    git commit --no-verify -m "$TIMESTAMP_COMMIT_MSG";
+elif [ $(isBranchProtected) == true ] && [ -e $WP_DIR/$TIMESTAMP_FILE ]; then
+    rm $WP_DIR/$TIMESTAMP_FILE;
+fi
+
+#refresh_db;
+#make_local;

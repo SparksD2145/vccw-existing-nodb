@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+source "$(pwd)/.git/hooks/common.bash";
+
+if [ $(isVagrantRunning) == 0 ]; then
+    echo "Your vagrant host must be running!" >&2;
+    exit 2;
+fi
+
+if [ $(isBranchProtected) == false ]; then
+
+    if [ ! -e $WP_DIR/$TIMESTAMP_FILE ]; then
+        echo "TIMESTAMP FILE MISSING! Try checking out the parent branch and then re-checking out your current branch";
+        exit 2;
+    fi
+
+    # call in common vars/functions
+    source $WP_DIR/$TIMESTAMP_FILE;
+
+    # create temporary changes dir
+    create_dir $WP_DIR/$WP_CHANGES_DIR;
+
+    # export latest changes of your project
+    vagrant ssh --command "wp   --skip-themes --skip-plugins \
+                                export \
+                                --dir=/var/www/html/$WP_CHANGES_DIR \
+                                --post_type=$wp_content_types \
+                                --author=$wp_user \
+                                --start_date=$wp_timestamp";
+
+    # Remove previous db seed
+    rm $WP_DIR/data.sql;
+
+    # perform a remote export of wp database and pull locally
+    wp --ssh="$PROJECT_REMOTE_SSH_WP" --skip-themes --skip-plugins --url="$PROJECT_REMOTE_URL" db export /tmp/$PROJECT_NAME.sql;
+    rsync -e "ssh -p ${PROJECT_REMOTE_SSH_PORT}" $PROJECT_REMOTE_SSH:/tmp/$PROJECT_NAME.sql $WP_DIR/ --remove-source-files --progress;
+    mv $WP_DIR/$PROJECT_NAME.sql $WP_DIR/data.sql;
+
+    # drop database and import new database seed.
+    refresh_db;
+
+    # make sure plugin is installed
+    vagrant ssh --command "wp --skip-themes --skip-plugins plugin install wordpress-importer --activate";
+    git add wordpress/wp-content/plugins/wordpress-importer;
+
+    vagrant ssh --command "wp   --skip-themes \
+                                import \
+                                /var/www/html/$WP_CHANGES_DIR \
+                                --authors=skip";
+
+    # export latest changes of your project
+    vagrant ssh --command "wp   --skip-themes --skip-plugins \
+                                db export /var/www/html/data.sql";
+
+    # track the new database seed
+    git add "$WP_DIR/data.sql";
+
+    # remove changes dir
+    if [ -d $WP_DIR/$WP_CHANGES_DIR ]; then
+        git rm --ignore-unmatch -q -rf $WP_DIR/$WP_CHANGES_DIR;
+        rm -rf $WP_DIR/$WP_CHANGES_DIR;
+    fi
+fi
+
+exit 0;
