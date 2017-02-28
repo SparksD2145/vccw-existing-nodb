@@ -1,7 +1,6 @@
 _wpeprivate/ export-ignore
 assets/ filter=lfs diff=lfs merge=lfs -text
 wp-content/uploads/ filter=lfs diff=lfs merge=lfs -text
-wordpress/.timestamp merge=ours
 
 *.iso filter=lfs diff=lfs merge=lfs -text
 *.hqx filter=lfs diff=lfs merge=lfs -text

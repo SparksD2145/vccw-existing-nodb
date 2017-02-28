@@ -32,7 +32,3 @@ dwsync.xml
 /wordpress/readme.html
 /wordpress/sitemap.xml
 /wordpress/sitemap.xml.gz
-
-# Plugin Specific
-**/gravity_forms/
-**/programmatic-forms/
