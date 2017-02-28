@@ -49,8 +49,8 @@ function isVagrantRunning () {
 
 create_timestamp_file () {
     echo "export wp_timestamp=$(date +'%Y-%m-%d')" > $WP_DIR/$TIMESTAMP_FILE;
-    echo "export $PROJECT_WP_USER"  >> $WP_DIR/$TIMESTAMP_FILE;
-    echo "export $PROJECT_WP_CONTENT_TYPES" >> $WP_DIR/$TIMESTAMP_FILE;
+    echo "export wp_user=PROJECT_WP_USER"  >> $WP_DIR/$TIMESTAMP_FILE;
+    echo "export wp_content_types=$PROJECT_WP_CONTENT_TYPES" >> $WP_DIR/$TIMESTAMP_FILE;
 }
 
 function refresh_db () {
