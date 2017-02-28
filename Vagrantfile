@@ -111,5 +111,5 @@ Vagrant.configure(2) do |config|
     config.vm.provision :shell, :privileged => false, :path => File.join( File.dirname(__FILE__), 'provision-post.sh' )
   end
 
-  config.vm.synced_folder "../programmatic-forms/", "/var/www/html/wp-content/plugins/programmatic-forms"
+  # config.vm.synced_folder "../programmatic-forms/", "/var/www/html/wp-content/plugins/programmatic-forms"
 end
