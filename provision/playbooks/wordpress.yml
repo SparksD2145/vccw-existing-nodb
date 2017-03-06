@@ -55,7 +55,6 @@
     shell: |
        wp core config \
        --force \
-       --skip-salts \
        --path={{ path }} \
        --dbhost={{ vccw.db_host }} \
        --dbname={{ vccw.db_name }} \

@@ -11,6 +11,7 @@ playbook.retry
 vendor
 
 # VCCW Modified Specific
+/wordpress/wp-config.php
 /wordpress/.wp-changes
 /provision-post.sh
 
