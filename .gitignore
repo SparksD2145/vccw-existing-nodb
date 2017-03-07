@@ -8,7 +8,6 @@
 npm-debug.log
 package.box
 playbook.retry
-vendor
 
 # VCCW Modified Specific
 /wordpress/.wp-changes
