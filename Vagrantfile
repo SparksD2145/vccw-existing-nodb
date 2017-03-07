@@ -39,7 +39,7 @@ Vagrant.configure(2) do |config|
   # forcing config variables
   _conf["vagrant_dir"] = "/vagrant"
 
-  config.vm.define _conf['hostname'] do |v|
+  config.vm.define _conf['hostname'], autostart: false do |v|
   end
 
   config.vm.box = ENV['wp_box'] || _conf['wp_box']

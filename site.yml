@@ -16,7 +16,7 @@ title: CHANGE ME
 multisite: false
 rewrite_structure: /%postname%/
 
-memory: 2048
+memory: 1024
 #
 # WordPress Path
 #
@@ -34,7 +34,7 @@ admin_email: vccw@example.com
 ## WordPress Database
 ##
 db_prefix: wp_
-db_host: localhost
+db_host: 127.0.0.1
 db_name: wordpress
 db_user: developer
 db_pass: developer
