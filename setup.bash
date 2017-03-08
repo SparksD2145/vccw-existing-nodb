@@ -12,10 +12,11 @@ if [ ! -L $(pwd)/.git/hooks/common.bash ]; then
 
     # Add our hooks
     for hook in $(pwd)/provision/githooks/*; do
-        if [ ! -e "$(pwd)/.git/hooks/$(basename $hook)" ]; then
-            ln -s $hook "$(pwd)/.git/hooks/$(basename $hook)";
-            chmod u+x "$(pwd)/.git/hooks/$(basename $hook)";
+        if [ -e "$(pwd)/.git/hooks/$(basename $hook)" ]; then
+            rm "$(pwd)/.git/hooks/$(basename $hook)";
         fi
+        ln -s $hook "$(pwd)/.git/hooks/$(basename $hook)";
+        chmod u+x "$(pwd)/.git/hooks/$(basename $hook)";
     done;
 fi
 

@@ -2,12 +2,11 @@
 
 source "$(pwd)/.git/hooks/common.bash";
 
-if [ $(isVagrantRunning) == 0 ]; then
-    echo "Your vagrant host must be running!" >&2;
-    exit 2;
-fi
-
 if [ $(isBranchProtected) == false ]; then
+    if [ $(isVagrantRunning) == 0 ]; then
+        echo "Your vagrant host must be running!" >&2;
+        exit 2;
+    fi
 
     if [ ! -e $WP_DIR/$TIMESTAMP_FILE ]; then
         echo "TIMESTAMP FILE MISSING! Try checking out the parent branch and then re-checking out your current branch";
