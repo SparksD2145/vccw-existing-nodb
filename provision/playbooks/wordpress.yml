@@ -22,15 +22,15 @@
       host: "%"
       state: present
 
-  - name: "Change owner of the {{ path }}"
-    become: yes
-    file:
-      path: "{{ path }}"
-      state: directory
-      owner: "{{ user }}"
-      group: "{{ user }}"
-      mode: 0755
-      recurse: yes
+  ####  - name: "Change owner of the {{ path }}"
+  ####    become: yes
+  ####    file:
+  ####      path: "{{ path }}"
+  ####      state: directory
+  ####      owner: "{{ user }}"
+  ####      group: "{{ user }}"
+  ####      mode: 0755
+  ####      recurse: yes
 
   - name: "Remove index.html from document root"
     become: yes
