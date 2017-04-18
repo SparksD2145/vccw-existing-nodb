@@ -3,11 +3,3 @@ command -v git-lfs >/dev/null 2>&1 || { echo >&2 "\nThis repository is configure
 git lfs post-checkout "$@"
 
 source "$(pwd)/.git/hooks/common.bash";
-
-if [ $(isBranchProtected) == false ] && [ ! -e $WP_DIR/$TIMESTAMP_FILE ]; then
-    create_timestamp_file;
-    git add $WP_DIR/$TIMESTAMP_FILE;
-    git commit --no-verify -m "$TIMESTAMP_COMMIT_MSG";
-elif [ $(isBranchProtected) == true ] && [ -e $WP_DIR/$TIMESTAMP_FILE ]; then
-    rm $WP_DIR/$TIMESTAMP_FILE;
-fi

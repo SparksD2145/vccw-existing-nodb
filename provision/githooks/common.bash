@@ -47,12 +47,6 @@ function isVagrantRunning () {
     echo $status;
 }
 
-create_timestamp_file () {
-    echo "export wp_timestamp=$(date +'%Y-%m-%d')" > $WP_DIR/$TIMESTAMP_FILE;
-    echo "export wp_user=$PROJECT_WP_USER"  >> $WP_DIR/$TIMESTAMP_FILE;
-    echo "export wp_content_types=$PROJECT_WP_CONTENT_TYPES" >> $WP_DIR/$TIMESTAMP_FILE;
-}
-
 function refresh_db () {
     # drop database and import database seed
     vagrant ssh --command 'wp --skip-plugins --skip-themes db drop --yes';
