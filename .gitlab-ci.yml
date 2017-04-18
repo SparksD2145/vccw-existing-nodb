@@ -1,0 +1,152 @@
+# Gitlab CI Configuration File
+
+stages:
+    - backup
+    - deploy
+    - rollback_on_failure
+    - cleanup
+    - health_check
+
+variables:
+    # remote filesystem directory
+    FS_DIR: "/var/vhosts/<host>.com/"
+
+    # remote backup directory
+    BAK_DIR: "/home/gitlab/backups"
+
+    # remote backup name format
+    BAK_NAME: "$CI_PROJECT_NAME.$CI_BUILD_REF_NAME"
+
+    # remote scripts directory
+    REMOTE_SCRIPTS_DIR: "/home/gitlab/scripts"
+
+# Environments to perform builds on
+.environment_builds: &env_build
+    when: manual # remove this to perform builds
+    only:
+        - master
+        - develop
+    before_script:
+        - >-
+            if [ $CI_BUILD_REF_NAME == "master" ]; then
+
+                # Declare hosts to be modified
+                declare -a BUILD_HOSTS=("<host1>" "<host2>");
+
+                # Declare Environment
+                declare BUILD_ENV=production
+
+                # Declare hostname (used for wordpress config)
+                declare REMOTE_HOST="northamericanspine.com"
+                declare REMOTE_HOST_URL="https://$REMOTE_HOST"
+            fi;
+        - >-
+            if [ $CI_BUILD_REF_NAME == "develop" ]; then
+
+                # Declare hosts to be modified
+                declare -a BUILD_HOSTS=("staging.nas");
+
+                # Declare Environment
+                declare BUILD_ENV=staging
+
+                # Declare hostname (used for wordpress config)
+                declare REMOTE_HOST="staging.northamericanspine.com"
+                declare REMOTE_HOST_URL="https://$REMOTE_HOST"
+            fi;
+
+# Deployment job template
+.deploy: &deployment
+    stage: deploy
+
+# Backup job template
+.backup: &backup
+    stage: backup
+
+# Rollback job template
+.rollback: &rollback
+    stage: rollback_on_failure
+    when: on_failure
+
+# Cleanup job template
+.cleanup: &cleanup
+    stage: cleanup
+    when: on_success
+
+# Health Check job template
+.health_check: &health_check
+    stage: health_check
+    when: always
+
+##################
+### BEGIN JOBS ###
+##################
+
+Perform Backup:
+    <<: *backup
+    <<: *env_build
+    script:
+        - >-
+            for host in "${BUILD_HOSTS[@]}"; do
+                ssh $host "$REMOTE_SCRIPTS_DIR/automated.backup.single.bash $FS_DIR $BAK_DIR/$BAK_NAME";
+            done;
+
+Deploy:
+    <<: *deployment
+    <<: *env_build
+    script:
+        - >-
+            for host in "${BUILD_HOSTS[@]}"; do
+
+                # Modify config to remove bad config values
+                cat wordpress/wp-config.php | sed "s/DB_NAME.*/DB_NAME\', \'$DB_NAME\'\);/" | sed "s/DB_USER.*/DB_USER\', \'$DB_USER\'\);/" | sed "s/DB_PASSWORD.*/DB_PASSWORD\', \'$DB_PASSWORD\'\);/" | sed "/WP_SITEURL/d" | sed "/WP_HOME/d" > wordpress/config.php;
+                mv wordpress/config.php wordpress/wp-config.php;
+
+                # Get GITLFS contents
+                git lfs fetch;
+                git lfs checkout;
+
+                # Sync remote filesystem with build filesystem
+                rsync -qzr --ignore-existing "$host:$FS_DIR/assets/" ./wordpress/assets/;
+                rsync -qzr --ignore-existing "$host:$FS_DIR/wp-content/uploads/" ./wordpress/wp-content/uploads/;
+                rsync -qzr ./wordpress/ "$host:$FS_DIR";
+
+                # Database changes (ignored)
+                # ssh $host "wp --path=$FS_DIR db drop --yes";
+                # ssh $host "wp --path=$FS_DIR db create";
+                # ssh $host "wp --path=$FS_DIR db import ${FS_DIR}/data.sql";
+                # ssh $host "wp --path=$FS_DIR db check";
+                # ssh $host "rm ${FS_DIR}/data.sql";
+
+                # update host url
+                ssh $host "wp --path=$FS_DIR --skip-plugins --skip-themes option update home $REMOTE_HOST_URL";
+                ssh $host "wp --path=$FS_DIR --skip-plugins --skip-themes option update siteurl $REMOTE_HOST_URL";
+
+                ssh $host "$REMOTE_SCRIPTS_DIR/automated.setup.single.bash $FS_DIR";
+            done;
+
+Rollback:
+    <<: *rollback
+    <<: *env_build
+    script:
+        - >-
+            for host in "${BUILD_HOSTS[@]}"; do
+                ssh $host "$REMOTE_SCRIPTS_DIR/automated.rollback.single.bash $FS_DIR $BAK_DIR/$BAK_NAME";
+            done;
+
+Perform Cleanup:
+    <<: *cleanup
+    <<: *env_build
+    script:
+        - >-
+            for host in "${BUILD_HOSTS[@]}"; do
+                ssh $host "rm $BAK_DIR/$BAK_NAME.tar.gz;"
+            done;
+
+Perform Health Check:
+    <<: *health_check
+    <<: *env_build
+    script:
+        - >-
+            for host in "${BUILD_HOSTS[@]}"; do
+                ssh $host "curl -sSf -H 'Host: $REMOTE_HOST' 127.0.0.1 > /dev/null";
+            done;
