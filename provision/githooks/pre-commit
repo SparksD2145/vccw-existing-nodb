@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-source "$(pwd)/.git/hooks/common.bash";
